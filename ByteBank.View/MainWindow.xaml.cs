@@ -37,7 +37,9 @@ namespace ByteBank.View
         //é executado quando o usuario clica no botão
         private void BtnProcessar_Click(object sender, RoutedEventArgs e)
         {
-            var taskSchedulerUI = TaskScheduler.FromCurrentSynchronizationContext();
+            //é executado na TaskSheduler principal
+            //dependendo de onde ele é executado terá um resultado diferente
+            var taskSchedulerUI = TaskScheduler.FromCurrentSynchronizationContext();//permite se executado na interface grafica a task 
             BtnProcessar.IsEnabled = false;
 
             //todas as contas dos clientes é armazenado na variavel "contas"
@@ -70,12 +72,12 @@ namespace ByteBank.View
             
             //espera terminar outras tarefas(é uma tarefa que serve para esperar outras tarefas)
             Task.WhenAll(contasTarefas)
-                .ContinueWith(task => 
+                .ContinueWith(task => //encadeando uma task
                 { 
                     var fim = DateTime.Now;
                     AtualizarView(resultado, fim - inicio);
-                }, taskSchedulerUI)
-                .ContinueWith(task => 
+                }, taskSchedulerUI)// esse taskSchedulerUI vai se executado na TaskScheduler(na interface grafica) que estiver rodando no momento 
+                .ContinueWith(task => //encadeando uma task
                 {
                     BtnProcessar.IsEnabled = true;
                 }, taskSchedulerUI);
