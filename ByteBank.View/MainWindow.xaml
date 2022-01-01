@@ -28,6 +28,13 @@
         <TextBlock DockPanel.Dock="Top">Resultado:</TextBlock>
         <TextBlock DockPanel.Dock="Top"
                    Name="TxtProgresso"/>
+        
+        <!--barra de progresso para dar feedback ao usuário-->
+        <ProgressBar Name="PsgProgresso"
+                     Minimum="0"
+                     Height="23"
+                     DockPanel.Dock="Bottom"/>
+
         <ListView Name="LstResultados"
                   Background="Beige"
                   Margin="0 10">

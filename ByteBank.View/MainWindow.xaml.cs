@@ -47,10 +47,11 @@ namespace ByteBank.View
             //todas as contas dos clientes é armazenado na variavel "contas"
             var contas = r_Repositorio.GetContaClientes();
 
-
+            //informa a quantidade de contas que serão processadas
+            PsgProgresso.Maximum = contas.Count();
 
             //é chamado aqui no começo para limpar a tela
-            AtualizarView(new List<string>(), TimeSpan.Zero);
+            LimparView();
 
             //contador.. armazena o inicio da operação
             var inicio = DateTime.Now;
@@ -67,11 +68,36 @@ namespace ByteBank.View
         //retorna uma lista de string
         private async Task<string[]> ConsolidarContas(IEnumerable<ContaCliente> contas)
         {
+            var taskSchedulerGUI = TaskScheduler.FromCurrentSynchronizationContext();
+
             var resultado = new List<string>();
             //               vai mapear as contas
-            var tasks = contas.Select(conta => Task.Factory.StartNew(() => r_Servico.ConsolidarMovimentacao(conta)));
+            var tasks = contas.Select(conta => 
+                Task.Factory.StartNew(() => 
+                {
+                    var resultadoConsolidacao = r_Servico.ConsolidarMovimentacao(conta);
+                    // Não utilizaremos atualização do PsgProgresso na Thread de trabalho
+                    //PsgProgresso.Value++;
+
+                Task.Factory.StartNew(
+                    () => PsgProgresso.Value++,
+                    CancellationToken.None,
+                    TaskCreationOptions.None,
+                    taskSchedulerGUI
+                    );
+
+                    return resultadoConsolidacao;
+                })
+                    
+            );
 
             return await Task.WhenAll(tasks);
+        }
+
+        private void LimparView()
+        {
+            LstResultados.ItemsSource = null;
+            TxtTempo.Text = null;
         }
 
         //Mostra o resumo da operação
