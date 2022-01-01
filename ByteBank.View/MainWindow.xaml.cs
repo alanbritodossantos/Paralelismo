@@ -46,7 +46,7 @@ namespace ByteBank.View
             //todas as contas dos clientes é armazenado na variavel "contas"
             var contas = r_Repositorio.GetContaClientes();
 
-  
+
 
             //é chamado aqui no começo para limpar a tela
             AtualizarView(new List<string>(), TimeSpan.Zero);
@@ -54,14 +54,15 @@ namespace ByteBank.View
             //contador.. armazena o inicio da operação
             var inicio = DateTime.Now;
 
-            var resultado = ConsolidarContas(contas);
 
-            
+
+
             //espera terminar outras tarefas(é uma tarefa que serve para esperar outras tarefas)
-            Task.WhenAll(contasTarefas)
+            ConsolidarContas(contas)
                 .ContinueWith(task => //encadeando uma task
-                { 
+                {
                     var fim = DateTime.Now;
+                    var resultado = task.Result;
                     AtualizarView(resultado, fim - inicio);
                 }, taskSchedulerUI)// esse taskSchedulerUI vai se executado na TaskScheduler(na interface grafica) que estiver rodando no momento 
                 .ContinueWith(task => //encadeando uma task
@@ -84,9 +85,11 @@ namespace ByteBank.View
                 });
             });
 
-            Task.WhenAll(tasks);//aguarda o termino das task em execução, assim que termina deixa seguir
-
-            return resultado;
+            ///  temos agora uma tarefa que retorna uma lista de string
+            return Task.WhenAll(tasks).ContinueWith(t => //aguarda o termino das task em execução, assim que termina deixa seguir
+            {
+                return resultado;
+            });
         }
 
         //Mostra o resumo da operação
