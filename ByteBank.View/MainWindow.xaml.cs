@@ -2,6 +2,7 @@
 using ByteBank.Core.Repository;
 using ByteBank.Core.Service;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -45,7 +46,7 @@ namespace ByteBank.View
             //todas as contas dos clientes é armazenado na variavel "contas"
             var contas = r_Repositorio.GetContaClientes();
 
-            var resultado = new List<string>();
+  
 
             //é chamado aqui no começo para limpar a tela
             AtualizarView(new List<string>(), TimeSpan.Zero);
@@ -53,21 +54,7 @@ namespace ByteBank.View
             //contador.. armazena o inicio da operação
             var inicio = DateTime.Now;
 
-            //
-
-
-            var contasTarefas = contas.Select(conta =>
-            {
-                //constroi tarefas
-                return Task.Factory.StartNew(() =>
-                {
-                    var resultadoConta = r_Servico.ConsolidarMovimentacao(conta);
-                    resultado.Add(resultadoConta);
-                });
-                
-                //força a execução do link
-            }).ToArray();
-
+            var resultado = ConsolidarContas(contas);
 
             
             //espera terminar outras tarefas(é uma tarefa que serve para esperar outras tarefas)
@@ -82,6 +69,24 @@ namespace ByteBank.View
                     BtnProcessar.IsEnabled = true;
                 }, taskSchedulerUI);
 
+        }
+
+        //retorna uma lista de string
+        private Task<List<string>> ConsolidarContas(IEnumerable<ContaCliente> contas)
+        {
+            var resultado = new List<string>();
+            //               vai mapear as contas
+            var tasks = contas.Select(conta =>
+            {
+                return Task.Factory.StartNew(() =>
+                {
+                    var contaResultado = r_Servico.ConsolidarMovimentacao(conta);
+                });
+            });
+
+            Task.WhenAll(tasks);//aguarda o termino das task em execução, assim que termina deixa seguir
+
+            return resultado;
         }
 
         //Mostra o resumo da operação
