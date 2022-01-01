@@ -1,6 +1,7 @@
 ﻿using ByteBank.Core.Model;
 using ByteBank.Core.Repository;
 using ByteBank.Core.Service;
+using ByteBank.View.Utils;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -56,8 +57,15 @@ namespace ByteBank.View
             //contador.. armazena o inicio da operação
             var inicio = DateTime.Now;
 
+            var progress = new Progress<string>(str => 
+                PsgProgresso.Value++);
+
+            //var byteBankProgress = new ByteBankProgress<string>(str =>
+            //    PsgProgresso.Value++);
+            
+
             //await significa aguardar uma tarefa
-            var resultado = await ConsolidarContas(contas);
+            var resultado = await ConsolidarContas(contas, progress);
 
             var fim = DateTime.Now;
             AtualizarView(resultado, fim - inicio);
@@ -66,10 +74,8 @@ namespace ByteBank.View
         }
 
         //retorna uma lista de string
-        private async Task<string[]> ConsolidarContas(IEnumerable<ContaCliente> contas)
+        private async Task<string[]> ConsolidarContas(IEnumerable<ContaCliente> contas, IProgress<string> reportadoDeProgresso)
         {
-            var taskSchedulerGUI = TaskScheduler.FromCurrentSynchronizationContext();
-
             var resultado = new List<string>();
             //               vai mapear as contas
             var tasks = contas.Select(conta => 
@@ -79,12 +85,7 @@ namespace ByteBank.View
                     // Não utilizaremos atualização do PsgProgresso na Thread de trabalho
                     //PsgProgresso.Value++;
 
-                Task.Factory.StartNew(
-                    () => PsgProgresso.Value++,
-                    CancellationToken.None,
-                    TaskCreationOptions.None,
-                    taskSchedulerGUI
-                    );
+                    reportadoDeProgresso.Report(resultadoConsolidacao);
 
                     return resultadoConsolidacao;
                 })
