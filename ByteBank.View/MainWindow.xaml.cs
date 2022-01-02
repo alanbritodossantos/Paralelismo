@@ -57,6 +57,8 @@ namespace ByteBank.View
             //contador.. armazena o inicio da operação
             var inicio = DateTime.Now;
 
+            BtnCancelar.IsEnabled = true;
+
             var progress = new Progress<string>(str => 
                 PsgProgresso.Value++);
 
@@ -71,6 +73,10 @@ namespace ByteBank.View
             AtualizarView(resultado, fim - inicio);
             BtnProcessar.IsEnabled = true;           
 
+        }
+        private void BtnCancelar_Click(object sender, RoutedEventArgs e)
+        {
+            BtnCancelar.IsEnabled = false;
         }
 
         //retorna uma lista de string
@@ -111,5 +117,7 @@ namespace ByteBank.View
             LstResultados.ItemsSource = result;
             TxtTempo.Text = mensagem;
         }
+
+
     }
 }
