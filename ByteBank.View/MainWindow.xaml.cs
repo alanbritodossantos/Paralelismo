@@ -110,7 +110,7 @@ namespace ByteBank.View
                     //se ouve uma requisição de cancelamento vai ser emitido uma exception de cancelado
                     ct.ThrowIfCancellationRequested();
 
-                    var resultadoConsolidacao = r_Servico.ConsolidarMovimentacao(conta);
+                    var resultadoConsolidacao = r_Servico.ConsolidarMovimentacao(conta, ct);
                     // Não utilizaremos atualização do PsgProgresso na Thread de trabalho
                     //PsgProgresso.Value++;
 
